@@ -26,39 +26,51 @@
 
 1. Клонирование репозитория
 
-```bash
-git clone https://github.com/AlexSkoruk/название-репозитория.git
+bash
+```
+git clone https://github.com/AlexSkoruk/cashflow_project.git
 cd cashflow_project
+```
 
 2. Создание виртуального окружения
 Windows:
 
-```bash
+bash
+```
 python -m venv venv
 venv\Scripts\activate
+```
 
 3. Установка зависимостей
 
-```bash
+bash
+```
 pip install -r requirements.txt
+```
 
 4. Настройка базы данных
 
-```bash
+bash
+```
 python manage.py makemigrations
 python manage.py migrate
+```
 
 5. Создание суперпользователя
 
-```bash
+bash
+```
 python manage.py createsuperuser
+```
 
 Далее следуйте инструкциям для создания администратора. Введите Username - имя пользователя, Email address - адрес электронной почты, Password - пароль, Password again - повтор ввода пароля.
 
 6. Запуск сервера
 
-```bash
+bash
+```
 python manage.py runserver
+```
 Откройте в браузере: http://127.0.0.1:8000/
 
 7. Доступ к админ-панели
