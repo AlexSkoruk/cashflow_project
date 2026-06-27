@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card-main">
+    <h4 class="mb-3"><i class="bi bi-pencil-square me-2"></i>{{ title }}</h4>
+    
+    <form method="post" id="recordForm">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+            <!-- Дата -->
+            <div class="col-md-6">
+                <label for="{{ form.date.id_for_label }}" class="form-label required-field">Дата</label>
+                {{ form.date }}
+                {% if form.date.errors %}
+                    <div class="text-danger small">{{ form.date.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Статус -->
+            <div class="col-md-6">
+                <label for="{{ form.status.id_for_label }}" class="form-label required-field">Статус</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                    <div class="text-danger small">{{ form.status.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Тип -->
+            <div class="col-md-6">
+                <label for="{{ form.operation_type.id_for_label }}" class="form-label required-field">Тип</label>
+                {{ form.operation_type }}
+                {% if form.operation_type.errors %}
+                    <div class="text-danger small">{{ form.operation_type.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Категория -->
+            <div class="col-md-6">
+                <label for="{{ form.category.id_for_label }}" class="form-label required-field">Категория</label>
+                <select name="category" class="form-select" id="id_category">
+                    <option value="">-- Выберите категорию --</option>
+                    {% for category in form.category.field.queryset %}
+                        <option value="{{ category.id }}" {% if form.category.value == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.category.errors %}
+                    <div class="text-danger small">{{ form.category.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Подкатегория -->
+            <div class="col-md-6">
+                <label for="{{ form.subcategory.id_for_label }}" class="form-label required-field">Подкатегория</label>
+                <select name="subcategory" class="form-select" id="id_subcategory">
+                    <option value="">-- Выберите подкатегорию --</option>
+                    {% for subcategory in form.subcategory.field.queryset %}
+                        <option value="{{ subcategory.id }}" {% if form.subcategory.value == subcategory.id %}selected{% endif %}>
+                            {{ subcategory.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.subcategory.errors %}
+                    <div class="text-danger small">{{ form.subcategory.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Сумма -->
+            <div class="col-md-6">
+                <label for="{{ form.amount.id_for_label }}" class="form-label required-field">Сумма (руб.)</label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <div class="text-danger small">{{ form.amount.errors }}</div>
+                {% endif %}
+                <div class="form-text">Минимальная сумма: 0.01 ₽</div>
+            </div>
+            
+            <!-- Комментарий -->
+            <div class="col-12">
+                <label for="{{ form.comment.id_for_label }}" class="form-label">Комментарий</label>
+                {{ form.comment }}
+                {% if form.comment.errors %}
+                    <div class="text-danger small">{{ form.comment.errors }}</div>
+                {% endif %}
+                <div class="form-text">Необязательное поле</div>
+            </div>
+        </div>
+        
+        <!-- Общие ошибки формы -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Кнопки -->
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-success-custom">
+                <i class="bi bi-check-circle me-1"></i>Сохранить
+            </button>
+            <a href="{% url 'cashflow:index' %}" class="btn btn-outline-custom">
+                <i class="bi bi-x-circle me-1"></i>Отмена
+            </a>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // При изменении типа обновление категории
+    $('#id_operation_type').change(function() {
+        var typeId = $(this).val();
+        var $category = $('#id_category');
+        var $subcategory = $('#id_subcategory');
+        
+        // Очищаем категории
+        $category.empty();
+        $category.append('<option value="">-- Выберите категорию --</option>');
+        
+        // Очищаем подкатегории
+        $subcategory.empty();
+        $subcategory.append('<option value="">-- Сначала выберите категорию --</option>');
+        
+        if (typeId) {
+            $.ajax({
+                url: "{% url 'cashflow:get_categories_by_type' %}",
+                data: { 'type_id': typeId },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.length > 0) {
+                        $.each(data, function(index, item) {
+                            $category.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                        $category.val('');
+                    } else {
+                        $category.append('<option value="">Нет доступных категорий</option>');
+                    }
+                }
+            });
+        }
+    });
+
+    // При изменении категории обновление подкатегории
+    $('#id_category').change(function() {
+        var categoryId = $(this).val();
+        var $subcategory = $('#id_subcategory');
+        
+        // Очищаем подкатегории
+        $subcategory.empty();
+        $subcategory.append('<option value="">-- Выберите подкатегорию --</option>');
+        
+        if (categoryId) {
+            $.ajax({
+                url: "{% url 'cashflow:get_subcategories_by_category' %}",
+                data: { 'category_id': categoryId },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.length > 0) {
+                        $.each(data, function(index, item) {
+                            $subcategory.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                        $subcategory.val('');
+                    } else {
+                        $subcategory.append('<option value="">Нет доступных подкатегорий</option>');
+                    }
+                }
+            });
+        }
+    });
+
+    // Валидация перед отправкой
+    $('#recordForm').submit(function(e) {
+        var type = $('#id_operation_type').val();
+        var category = $('#id_category').val();
+        var subcategory = $('#id_subcategory').val();
+        var amount = $('#id_amount').val();
+        
+        if (!type) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите тип');
+            return false;
+        }
+        if (!category) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите категорию');
+            return false;
+        }
+        if (!subcategory) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите подкатегорию');
+            return false;
+        }
+        if (!amount || parseFloat(amount) <= 0) {
+            e.preventDefault();
+            alert('Пожалуйста, введите сумму больше 0');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

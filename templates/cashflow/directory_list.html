@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление справочниками{% endblock %}
+
+{% block content %}
+<div class="card-main">
+    <h4 class="mb-0"><i class="bi bi-gear me-2"></i>Управление справочниками</h4>
+    <p class="text-muted mt-2">Здесь вы можете управлять статусами, типами, категориями и подкатегориями</p>
+</div>
+
+<!-- Статусы -->
+<div class="card-main">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-tag me-2"></i>Статусы</h5>
+        <a href="{% url 'cashflow:status_create' %}" class="btn btn-success-custom btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Добавить
+        </a>
+    </div>
+    <hr>
+    <div class="row">
+        {% for status in statuses %}
+        <div class="col-md-3 col-6 mb-2">
+            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                <span>{{ status.name }}</span>
+                <div>
+                    <a href="{% url 'cashflow:status_edit' status.id %}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'cashflow:status_delete' status.id %}" class="btn btn-sm btn-outline-danger" title="Удалить">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted">Статусов пока нет</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Типы -->
+<div class="card-main">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Типы</h5>
+        <a href="{% url 'cashflow:type_create' %}" class="btn btn-success-custom btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Добавить
+        </a>
+    </div>
+    <hr>
+    <div class="row">
+        {% for type in types %}
+        <div class="col-md-3 col-6 mb-2">
+            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                <span>{{ type.name }}</span>
+                <div>
+                    <a href="{% url 'cashflow:type_edit' type.id %}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'cashflow:type_delete' type.id %}" class="btn btn-sm btn-outline-danger" title="Удалить">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted">Типов пока нет</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Категории -->
+<div class="card-main">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Категории</h5>
+        <a href="{% url 'cashflow:category_create' %}" class="btn btn-success-custom btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Добавить
+        </a>
+    </div>
+    <hr>
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-4 col-6 mb-2">
+            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                <span>
+                    {{ category.name }}
+                    <span class="text-muted small">({{ category.operation_type.name }})</span>
+                </span>
+                <div>
+                    <a href="{% url 'cashflow:category_edit' category.id %}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'cashflow:category_delete' category.id %}" class="btn btn-sm btn-outline-danger" title="Удалить">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted">Категорий пока нет</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Подкатегории -->
+<div class="card-main">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-folder-open me-2"></i>Подкатегории</h5>
+        <a href="{% url 'cashflow:subcategory_create' %}" class="btn btn-success-custom btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Добавить
+        </a>
+    </div>
+    <hr>
+    <div class="row">
+        {% for subcategory in subcategories %}
+        <div class="col-md-4 col-6 mb-2">
+            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                <span>
+                    {{ subcategory.name }}
+                    <span class="text-muted small">({{ subcategory.category.name }})</span>
+                </span>
+                <div>
+                    <a href="{% url 'cashflow:subcategory_edit' subcategory.id %}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'cashflow:subcategory_delete' subcategory.id %}" class="btn btn-sm btn-outline-danger" title="Удалить">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted">Подкатегорий пока нет</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

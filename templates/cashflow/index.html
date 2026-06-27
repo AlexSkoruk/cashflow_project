@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Управление ДДС{% endblock %}
+
+{% block content %}
+<!-- Заголовок и кнопка добавления -->
+<div class="card-main">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="bi bi-list-ul me-2"></i>Все записи</h4>
+        <a href="{% url 'cashflow:record_create' %}" class="btn btn-success-custom">
+            <i class="bi bi-plus-circle me-1"></i>Новая запись
+        </a>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="filter-section">
+    <h6 class="mb-3"><i class="bi bi-funnel me-2"></i>Фильтры</h6>
+    <form method="get" action="{% url 'cashflow:index' %}" id="filterForm">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Дата от</label>
+                <input type="date" name="date_from" class="form-control" value="{{ filter_data.date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Дата до</label>
+                <input type="date" name="date_to" class="form-control" value="{{ filter_data.date_to }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Статус</label>
+                <select name="status" class="form-select">
+                    <option value="">Все</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.id }}" {% if filter_data.status|add:"0" == status.id %}selected{% endif %}>
+                            {{ status.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Тип</label>
+                <select name="operation_type" class="form-select" id="filter_type">
+                    <option value="">Все</option>
+                    {% for type in types %}
+                        <option value="{{ type.id }}" {% if filter_data.operation_type|add:"0" == type.id %}selected{% endif %}>
+                            {{ type.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Категория</label>
+                <select name="category" class="form-select" id="filter_category">
+                    <option value="">Все</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if filter_data.category|add:"0" == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Подкатегория</label>
+                <select name="subcategory" class="form-select" id="filter_subcategory">
+                    <option value="">Все</option>
+                    {% for subcategory in subcategories %}
+                        <option value="{{ subcategory.id }}" {% if filter_data.subcategory|add:"0" == subcategory.id %}selected{% endif %}>
+                            {{ subcategory.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="d-flex gap-2 w-100">
+                    <button type="submit" class="btn btn-primary-custom" style="height: 38px;">
+                        <i class="bi bi-search me-1"></i>Применить
+                    </button>
+                    <a href="{% url 'cashflow:index' %}" class="btn btn-outline-custom" style="height: 38px;">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Таблица записей -->
+<div class="card-main">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Тип</th>
+                    <th>Категория</th>
+                    <th>Подкатегория</th>
+                    <th>Сумма</th>
+                    <th>Комментарий</th>
+                    <th class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in page_obj %}
+                <tr>
+                    <td>{{ record.date|date:"d.m.Y" }}</td>
+                    <td>{{ record.status.name }}</td>
+                    <td>{{ record.operation_type.name }}</td>
+                    <td>{{ record.category.name }}</td>
+                    <td>{{ record.subcategory.name }}</td>
+                    <td><strong>{{ record.amount|floatformat:2 }} ₽</strong></td>
+                    <td>{{ record.comment|default:"—"|truncatechars:30 }}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'cashflow:record_edit' record.id %}" 
+                               class="btn btn-outline-primary" title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'cashflow:record_delete' record.id %}" 
+                               class="btn btn-outline-danger" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                        Записей не найдено
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <div class="text-muted mt-2 small">
+        Всего записей: {{ page_obj.paginator.count }}
+    </div>
+</div>
+
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Сохранение всех категорий и подкатегорий
+    var $category = $('#filter_category');
+    var $subcategory = $('#filter_subcategory');
+    
+    var allCategoriesOptions = $category.find('option').clone();
+    var allSubcategoriesOptions = $subcategory.find('option').clone();
+    
+    // Функция для загрузки категорий по типу
+    function loadCategoriesByType(typeId, preserveSelected) {
+        var $category = $('#filter_category');
+        var $subcategory = $('#filter_subcategory');
+        
+        if (typeId) {
+            $.ajax({
+                url: "{% url 'cashflow:get_categories_by_type' %}",
+                data: { 'type_id': typeId },
+                dataType: 'json',
+                async: false,
+                success: function(data) {
+                    $category.empty();
+                    $category.append('<option value="">Все</option>');
+                    if (data.length > 0) {
+                        $.each(data, function(index, item) {
+                            $category.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                    } else {
+                        $category.append('<option value="">Нет категорий</option>');
+                    }
+                    
+                    if (preserveSelected) {
+                        var currentVal = $category.data('selected-val');
+                        if (currentVal) {
+                            $category.val(currentVal);
+                        }
+                    } else {
+                        $category.val('');
+                    }
+                    
+                    $subcategory.empty();
+                    $subcategory.append('<option value="">Все</option>');
+                    $subcategory.val('');
+                }
+            });
+        } else {
+            $category.empty();
+            $category.append(allCategoriesOptions.clone());
+            $category.val('');
+            
+            $subcategory.empty();
+            $subcategory.append(allSubcategoriesOptions.clone());
+            $subcategory.val('');
+        }
+    }
+    
+    // Функция для загрузки подкатегорий по категории
+    function loadSubcategoriesByCategory(categoryId, preserveSelected) {
+        var $subcategory = $('#filter_subcategory');
+        
+        if (categoryId) {
+            $.ajax({
+                url: "{% url 'cashflow:get_subcategories_by_category' %}",
+                data: { 'category_id': categoryId },
+                dataType: 'json',
+                async: false,
+                success: function(data) {
+                    $subcategory.empty();
+                    $subcategory.append('<option value="">Все</option>');
+                    if (data.length > 0) {
+                        $.each(data, function(index, item) {
+                            $subcategory.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                    } else {
+                        $subcategory.append('<option value="">Нет подкатегорий</option>');
+                    }
+                    
+                    if (preserveSelected) {
+                        var currentVal = $subcategory.data('selected-val');
+                        if (currentVal) {
+                            $subcategory.val(currentVal);
+                        }
+                    } else {
+                        $subcategory.val('');
+                    }
+                }
+            });
+        } else {
+            $subcategory.empty();
+            $subcategory.append(allSubcategoriesOptions.clone());
+            $subcategory.val('');
+        }
+    }
+    
+    // При загрузке страницы проверка, выбран ли тип
+    var initialTypeId = $('#filter_type').val();
+    var initialCategoryId = $('#filter_category').val();
+    var initialSubcategoryId = $('#filter_subcategory').val();
+    
+    // Если тип выбран при загрузке - загрузка соответствующие категории
+    if (initialTypeId) {
+        $('#filter_category').data('selected-val', initialCategoryId);
+        loadCategoriesByType(initialTypeId, true);
+        
+        if (initialCategoryId) {
+            $('#filter_subcategory').data('selected-val', initialSubcategoryId);
+            loadSubcategoriesByCategory(initialCategoryId, true);
+        }
+    }
+    
+    // При изменении типа обновление категории
+    $('#filter_type').change(function() {
+        var typeId = $(this).val();
+        $('#filter_category').data('selected-val', '');
+        $('#filter_subcategory').data('selected-val', '');
+        loadCategoriesByType(typeId, false);
+    });
+
+    // При изменении категории обновление подкатегории
+    $('#filter_category').change(function() {
+        var categoryId = $(this).val();
+        $('#filter_subcategory').data('selected-val', '');
+        loadSubcategoriesByCategory(categoryId, false);
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
