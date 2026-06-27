@@ -83,7 +83,6 @@ http://127.0.0.1:8000/admin/
 ```
 cashflow_project/
 ├── cashflow/                 # Основное приложение
-│   ├── management/           # Кастомные команды
 │   ├── migrations/           # Миграции базы данных
 │   ├── admin.py              # Настройка админ-панели
 │   ├── forms.py              # Формы
